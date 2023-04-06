@@ -20,13 +20,14 @@ const mongodb_1 = require("mongodb");
 dotenv_1.default.config();
 const app = (0, express_1.default)();
 const port = process.env.PORT || 8000;
-const callbackUrl = process.env.CALLBACK_URL + '/' + 'callback/';
-const linksCollectionName = 'submitted_links';
+const callbackUrl = process.env.CALLBACK_URL + "/" + "callback/";
+const linksCollectionName = "submitted_links";
 app.use(express_1.default.json());
 app.use((0, cors_1.default)());
 const dbName = "zkclaims";
 let linksCollection;
 const client = new mongodb_1.MongoClient("mongodb+srv://admin:admin@cluster0.rxnpu.mongodb.net/zkclaims");
+console.log(client);
 const getLinksCollection = () => __awaiter(void 0, void 0, void 0, function* () {
     if (!linksCollection) {
         yield client.connect();
@@ -37,9 +38,9 @@ const getLinksCollection = () => __awaiter(void 0, void 0, void 0, function* () 
 });
 const reclaim = new reclaim_sdk_1.Reclaim(callbackUrl);
 const isValidRepo = (repoStr) => {
-    return repoStr.indexOf('/') > -1 && repoStr.split('/').length === 2;
+    return repoStr.indexOf("/") > -1 && repoStr.split("/").length === 2;
 };
-app.get('/home/repo', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+app.get("/home/repo", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { hackathonname, teamname, repo, email, presentationlink } = req.query;
     if (!repo || !email) {
         res.status(400).send(`400 - Bad Request: repo and email are required`);
@@ -54,10 +55,10 @@ app.get('/home/repo', (req, res) => __awaiter(void 0, void 0, void 0, function* 
         res.status(400).send(`400 - Bad Request: invalid repository name`);
         return;
     }
-    const callbackId = 'repo-' + (0, reclaim_sdk_1.generateUuid)();
-    const template = (yield reclaim.connect('ZKClaim', [
+    const callbackId = "repo-" + (0, reclaim_sdk_1.generateUuid)();
+    const template = (yield reclaim.connect("ZKClaim", [
         {
-            provider: 'github-contributor',
+            provider: "github-contributor",
             params: {
                 repo: repoFullName,
             },
@@ -69,7 +70,7 @@ app.get('/home/repo', (req, res) => __awaiter(void 0, void 0, void 0, function* 
         const linksCollection = yield getLinksCollection();
         yield linksCollection.insertOne({
             callback_id: callbackId,
-            status: 'pending',
+            status: "pending",
             hackathonname: hackathon,
             teamname: team,
             email: emailStr,
@@ -84,7 +85,7 @@ app.get('/home/repo', (req, res) => __awaiter(void 0, void 0, void 0, function* 
     }
     res.json({ url, callbackId });
 }));
-app.get('/status/:callbackId', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+app.get("/status/:callbackId", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     let status;
     if (!req.params.callbackId) {
         res.status(400).send(`400 - Bad Request: callbackId is required`);
@@ -106,8 +107,8 @@ app.get('/status/:callbackId', (req, res) => __awaiter(void 0, void 0, void 0, f
     }
     res.json({ status });
 }));
-app.use(express_1.default.text({ type: '*/*' }));
-app.post('/callback/:id', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+app.use(express_1.default.text({ type: "*/*" }));
+app.post("/callback/:id", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     if (!req.params.id) {
         res.status(400).send(`400 - Bad Request: callbackId is required`);
         return;
@@ -125,7 +126,9 @@ app.post('/callback/:id', (req, res) => __awaiter(void 0, void 0, void 0, functi
     const claims = { claims: reqBody.claims };
     try {
         const linksCollection = yield getLinksCollection();
-        const submittedLink = yield linksCollection.findOne({ callback_id: callbackId });
+        const submittedLink = yield linksCollection.findOne({
+            callback_id: callbackId,
+        });
         if (!submittedLink) {
             res.status(404).send(`404 - Not Found: callbackId not found`);
             return;
@@ -134,7 +137,7 @@ app.post('/callback/:id', (req, res) => __awaiter(void 0, void 0, void 0, functi
             res.status(404).send(`404 - Not Found: callbackId not found`);
             return;
         }
-        const result = yield linksCollection.updateOne({ callback_id: callbackId }, { $set: { claims: claims, status: 'verified' } });
+        const result = yield linksCollection.updateOne({ callback_id: callbackId }, { $set: { claims: claims, status: "verified" } });
         console.log(result);
     }
     catch (e) {
@@ -156,13 +159,13 @@ app.post('/callback/:id', (req, res) => __awaiter(void 0, void 0, void 0, functi
 	  </h1>
 	</div>`);
 }));
-app.get('/data', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+app.get("/data", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const linksCollection = yield getLinksCollection();
     const data = yield linksCollection.find().toArray();
     res.json(data);
 }));
-process.on('uncaughtException', function (err) {
-    console.log('Caught exception: ', err);
+process.on("uncaughtException", function (err) {
+    console.log("Caught exception: ", err);
 });
 app.listen(port, () => {
     console.log(`Server is running at http://localhost:${port}`);

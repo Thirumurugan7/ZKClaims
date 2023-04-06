@@ -1,21 +1,20 @@
-
-import Main from './components/Main'
-import Toaster from './components/Toaster'
-
+import Main from "./components/Main";
+import Toaster from "./components/Toaster";
+import Checkout from "./components/Checkout";
+import Home from "./components/Home";
+import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
+import Form from "./components/Form_c";
+import { Navbar } from "./components/Navbar";
 function App() {
-	return (
-		<>
-			<Main />
-
-			<div className="fixed bottom-5 left-1/2 -translate-x-1/2 -z-10">
-				<h3 className="text-xl text-white text-opacity-70 w-full whitespace-nowrap">
-					Made with 💙  by ZKClaims
-				</h3>
-			</div>
-
-			<Toaster />
-		</>
-	)
+  return (
+    <Router>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/apply" element={<Form />} />
+        <Route path="/checkout" element={<Checkout />} />
+      </Routes>
+    </Router>
+  );
 }
 
-export default App
+export default App;
